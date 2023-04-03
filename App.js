@@ -7,6 +7,7 @@ export default function App() {
   const [tip, setTip] = useState(0.1);
   const [billAmount, setBillAmount] = useState(0);
   const [total, setTotal] = useState(0);
+  const [selectedTip, setSelectedTip] = useState(0);
 
   const tipAmounts = [
     {
@@ -32,7 +33,8 @@ export default function App() {
   ];
 
   const GenerateBillAmount = () => {
-    setBillAmount(Math.floor(Math.random() * 100) + 1);
+    setBillAmount(Math.floor(Math.random() * 100));
+    setSelectedTip(tip);
   }
 
   useEffect(() => {
@@ -43,12 +45,16 @@ export default function App() {
 
   const selectTip = (tipValue) => {
     setTip(tipValue);
+    setSelectedTip(tipValue);
   };
 
   const ListItem = ({ item, backgroundColor, textColor }) => (
     <TouchableOpacity
       onPress={() => selectTip(item.value)}
-      style={[styles.item, { backgroundColor }]}
+      style={[
+        styles.item,
+        { backgroundColor: selectedTip === item.value ? '#FFC107' : backgroundColor },
+      ]}
     >
       <Text style={[styles.itemText, { color: textColor }]}>{item.name}</Text>
     </TouchableOpacity>
@@ -56,14 +62,21 @@ export default function App() {
 
   return (
     <View style={styles.container}>
+      <Text style={styles.heading}>Calculate Tip</Text>
       <Button onPress={GenerateBillAmount} title="Generate Random Bill"></Button>
       <TextInput
         placeholder="Enter a bill amount"
         style={styles.tipInput}
         keyboardType="numeric"
         value={billAmount.toString()}
-        onChangeText={(billAmount) => setBillAmount(billAmount)}
-      ></TextInput>
+        onChangeText={(billAmount) => {
+          if (!isNaN(parseFloat(billAmount))) {
+            setBillAmount(parseFloat(billAmount));
+          } else {
+            setBillAmount(0);
+          }
+        }}
+      />
       <FlatList
         style={styles.tipList}
         data={tipAmounts}
@@ -71,9 +84,9 @@ export default function App() {
         numColumns={2}
         renderItem={({ item }) => <ListItem item={item} textColor="black" />}
       />
-      <Text style={styles.billAmount}>Bill Amount: ${billAmount}</Text>
+      <Text style={styles.billAmount}>Bill Amount: ${billAmount.toFixed(2)}</Text>
       <Text style={styles.tipAmount}>Tip Amount: ${(billAmount * tip).toFixed(2)}</Text>
-      <Text style={styles.line}>-----------------------------------</Text>
+      <Text style={styles.line}/>
       <Text style={styles.totalAmount}>Total Amount: ${total}</Text>
       <StatusBar style="auto" />
     </View>
@@ -88,6 +101,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 200,
+  },
+  heading:{
+    fontSize: 34,
   },
   tipInput: {
     height: 40,
@@ -115,9 +131,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   line:{
-    fontSize: 20,
-    alignSelf: 'flex-end',
+    height: 2,
+    width: 220,
     marginRight: 50,
+    backgroundColor: '#000',
+    alignSelf: 'flex-end',
+    marginTop: 5,
   },
   billAmount: {
     fontSize: 20,
